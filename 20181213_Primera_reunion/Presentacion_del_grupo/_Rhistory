@@ -1,0 +1,8 @@
+unlink('Presentación_gusRMalaga_cache', recursive = TRUE)
+unlink('Presentación_gusRMalaga_cache', recursive = TRUE)
+devtools::install_github('yihui/xaringan')
+![:scale 50%](twitter.png)
+# Bigger fig.width
+include_graphics(twitter.png)
+# Bigger fig.width
+include_graphics(twitter.png)

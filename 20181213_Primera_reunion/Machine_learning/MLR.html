@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Machine Learning con R</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Domingo López Rodríguez" />
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Machine Learning con R
+### Domingo López Rodríguez
+### 13 de diciembre de 2018
+
+---
+
+
+
+
+
+
+class: center, middle
+
+# Machine Learning
+
+.pull-left[
+![](https://imgs.xkcd.com/comics/machine_learning.png)
+]
+
+.pull-right[
+
+&lt;br/&gt;
+
+### Una máquina _aprende_ si es capaz de utilizar experiencias pasadas para mejorar su desempeño futuro en una tarea
+]
+
+---
+class: center, middle
+# Tipos de machine learning
+
+![](./Machine Learning.png)
+
+---
+class: center, middle
+
+# El proceso
+
+### ![El proceso de Machine Learning](./Proceso ML.png)
+
+
+---
+class: center, middle
+# Paquetes de R para Machine Learning
+
+![Paquetes de R para Machine Learning](Machine Learning in R.png)
+
+---
+
+# Paquetes de R que vamos a usar
+
+- [mlbench](https://cran.r-project.org/package=mlbench)
+
+Una colección de problemas de prueba, tanto artificiales como reales, que incluyen, por ejemplo, algunos de los datasets del repositorio UCI.
+
+- [mlr](https://github.com/mlr-org/mlr)
+
+Machine Learning en R 
+
+
+- [caret](https://github.com/topepo/caret/)
+
+Diversas funciones para entrenar modelos y para representar gráficamente modelos regresión y clasificación.
+
+- Y la distribución _base_!
+
+Los instalamos antes de empezar:
+
+```r
+install.packages(c("mlbench", "mlr", "caret"))
+```
+
+---
+class: inverse, center, middle
+# Regresión
+
+### ![](https://www.hergertarian.com/s/linear_regression_2x.png)
+
+
+---
+
+# Datos
+
+Cargamos los datos:
+
+```r
+library(mlbench)
+data("BostonHousing")
+```
+&lt;table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; crim &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; zn &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; indus &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; chas &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; nox &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; rm &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; age &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; dis &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; rad &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; tax &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; ptratio &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; b &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; lstat &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; medv &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.00632 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.31 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.538 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.575 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 65.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.0900 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 296 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 15.3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 396.90 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.98 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 24.0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.02731 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.07 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.469 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.421 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 78.9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.9671 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 242 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 17.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 396.90 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 9.14 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.6 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.02729 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.07 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.469 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.185 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 61.1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.9671 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 242 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 17.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 392.83 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.03 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 34.7 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.03237 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.18 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.458 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.998 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 45.8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.0622 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 222 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 394.63 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.94 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 33.4 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.06905 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.18 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.458 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.147 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 54.2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.0622 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 222 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 396.90 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5.33 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 36.2 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 0.02985 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.18 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.458 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.430 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 58.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6.0622 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 222 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 394.12 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5.21 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 28.7 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+Datos sobre el precio de la vivienda en los suburbios de Boston, expresados en miles de dólares,
+con variables numéricas que indican aspectos del vecindario, de la criminalidad, etc.
+
+El objetivo es predecir dicho precio de la vivienda a partir del resto de parámetros proporcionados.
+
+---
+
+# `R` - Base
+
+Construimos el modelo:
+
+
+```r
+base_model &lt;- lm(medv ~ ., data = BostonHousing)
+```
+
+&lt;table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Estimate &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Std. Error &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; t value &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; Pr(&amp;gt;|t|) &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; (Intercept) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 36.4594884 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 5.1034588 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 7.1440742 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; crim &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.1080114 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0328650 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -3.2865169 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0010868 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; zn &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0464205 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0137275 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.3815763 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0007781 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; indus &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0205586 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0614957 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.3343100 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.7382881 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; chas1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 2.6867338 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.8615798 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.1183809 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0019250 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; nox &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -17.7666112 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.8197437 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -4.6512574 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000042 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; rm &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.8098652 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.4179253 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 9.1161402 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; age &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0006922 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0132098 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0524024 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.9582293 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; dis &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -1.4755668 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1994547 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -7.3980036 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; rad &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.3060495 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0663464 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4.6128998 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000051 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; tax &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.0123346 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0037605 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -3.2800091 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0011116 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ptratio &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.9527472 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1308268 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -7.2825106 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; b &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0093117 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0026860 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 3.4667926 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0005729 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; lstat &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.5247584 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0507153 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -10.3471458 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0000000 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+# Evaluación del desempeño
+
+La regresión lineal tiene `\(R^2=\)` 0.73.
+
+Evaluamos su desempeño:
+
+```r
+predictions &lt;- base_model %&gt;% predict(newdata = BostonHousing)
+
+target_var &lt;- BostonHousing$medv
+
+mse_base &lt;- mean((predictions - target_var) ^ 2)
+```
+
+El error cuadrático medio (MSE) obtenido por el modelo lineal es 21.89.
+
+---
+class: center, middle
+
+# El paquete .small[`mlr`]
+
+### ![Estructura de mlr](./mlr.png)
+
+---
+
+# .small[`mlr`] - Tasks
+
+
+```r
+library(mlr)
+boston_task &lt;- makeRegrTask(data = BostonHousing, 
+                            target = "medv")
+```
+
+
+```
+Supervised task: BostonHousing
+Type: regr
+Target: medv
+Observations: 506
+Features:
+   numerics     factors     ordered functionals 
+         12           1           0           0 
+Missings: FALSE
+Has weights: FALSE
+Has blocking: FALSE
+Has coordinates: FALSE
+```
+
+---
+
+# .small[`mlr`] - Learners
+
+Lista de métodos (_learners_) que son capaces de hacer regresión:
+
+
+```r
+regr_learners &lt;- listLearners() %&gt;% subset(type == "regr")
+```
+
+&lt;table class="table" style="font-size: 8px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; class &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; name &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; package &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; type &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; installed &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; numerics &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; factors &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 95 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.bartMachine &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian Additive Regression Trees &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bartMachine &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 96 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.bcart &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian CART &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tgp &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 97 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.bgp &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian Gaussian Process &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tgp &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 98 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.bgpllm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian Gaussian Process with jumps to the Limiting Linear Model &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tgp &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 99 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.blm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian Linear Model &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; tgp &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 100 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.brnn &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bayesian regularization for feed-forward neural networks &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; brnn &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+Sólo aquellos que están instalados:
+&lt;table class="table" style="font-size: 8px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; class &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; name &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; package &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; type &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; installed &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; numerics &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; factors &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 108 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.cubist &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Cubist &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Cubist &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 114 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.featureless &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Featureless regression &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mlr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 115 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.fnn &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Fast k-Nearest Neighbor &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FNN &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 116 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.frbs &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Fuzzy Rule-based Systems &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; frbs &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 118 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.gausspr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gaussian Processes &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; kernlab &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 119 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr.gbm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Gradient Boosting Machine &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; gbm &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; regr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+
+# .small[`mlr`] - Entrenamiento
+
+
+```r
+models &lt;- benchmark(learners = "regr.lm", 
+                    tasks = boston_task,
+                    show.info = FALSE)
+```
+
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; iter &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; mse &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 25.24335 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.11463 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 30.87751 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 29.43987 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 21.39912 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 19.66457 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 36.42655 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.55697 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 16.17549 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 23.98655 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+El MSE final es: 23.99. (El encontrado usando `lm` directamente era 21.89).
+
+¿Por qué la diferencia con lo anterior? *Hemos hecho trampas*.
+
+---
+class: center, middle
+# Validación cruzada
+
+.pull-left[
+![](https://imagessl4.casadellibro.com/a/l/t0/84/9788467030884.jpg)
+
+_Human Learning_
+
+]
+
+.pull-left[
+
+&lt;br/&gt;
+
+![](https://www.abc.es/Media/201301/23/examenteorico--644x362.jpg)
+
+&lt;br/&gt;
+
+_Validación_
+
+_Sobreentrenamiento_
+
+]
+
+---
+# .small[`mlr`] - Comparación entre métodos:
+
+```r
+my_learners &lt;- regr_learners %&gt;% 
+  subset(factors == TRUE &amp; installed == TRUE)
+
+many_models &lt;- benchmark(learners = my_learners$class, 
+                         tasks = boston_task)
+```
+
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; MSE &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Cubist &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 18.40429 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Featureless regression &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 84.88674 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Gaussian Processes &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 13.13554 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Generalized Linear Regression &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 23.59927 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Support Vector Machines &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 12.84640 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Simple Linear Regression &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 23.59927 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Neural Network &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 76.65893 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Principal Component Regression &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 23.59927 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Partial Least Squares Regression &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 23.59927 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Random Forest &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 11.27763 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Decision Tree &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 22.59178 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Relevance Vector Machine &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 28.26751 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; Support Vector Machines (libsvm) &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 13.38069 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+# .small[``mlr] - Visualización de resultados
+
+
+```r
+plotBMRBoxplots(many_models, style = "violin")
+```
+
+&lt;img src="MLR_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# El paquete .small[`caret`]
+
+
+```r
+library(caret)
+modelLookup()
+```
+
+
+
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; class &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; name &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; package &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; installed &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; regression &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; classification &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ada &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Boosted Classification Trees &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; ada,plyr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AdaBag &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged AdaBoost &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; adabag,plyr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AdaBoost.M1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AdaBoost.M1 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; adabag,plyr &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; adaboost &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AdaBoost Classification Trees &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; fastAdaboost &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; amdai &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Adaptive Mixture Discriminant Analysis &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; adaptDA &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; ANFIS &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Adaptive-Network-Based Fuzzy Inference System &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; frbs &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; avNNet &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Model Averaged Neural Network &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; nnet &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; awnb &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Naive Bayes Classifier with Attribute Weighting &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bnclassify &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; awtan &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Tree Augmented Naive Bayes Classifier with Attribute Weighting &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; bnclassify &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bag &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged Model &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; caret &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bagEarth &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged MARS &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; earth &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bagEarthGCV &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged MARS using gCV Pruning &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; earth &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bagFDA &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged Flexible Discriminant Analysis &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; earth,mda &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bagFDAGCV &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Bagged FDA using gCV Pruning &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; earth &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FALSE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; bam &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Generalized Additive Model using Splines &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; mgcv &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; TRUE &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+# .small[`caret`] - Entrenamiento
+
+Debemos especificar el método de validación que queremos usar, y usamos la función `train` para entrenar dicho método.
+
+
+```r
+fitControl &lt;- trainControl(method = "repeatedcv",
+                           number = 10,
+                           repeats = 10)
+
+caret_lm_model &lt;- train(medv ~ ., 
+                        data = BostonHousing, 
+                        method = "lm",
+                        trControl = fitControl)
+```
+
+---
+# .small[`caret`] - Resultado
+
+El resultado de entrenar el modelo de regresión lineal es:
+
+.small[
+
+```
+Linear Regression 
+
+506 samples
+ 13 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 455, 455, 455, 454, 456, 456, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  4.796073  0.7320042  3.382283
+
+Tuning parameter 'intercept' was held constant at a value of TRUE
+```
+]
+
+Podemos observar que se ha conseguido un MSE = 23.
+
+---
+# .small[`caret`] - Comparación entre métodos
+
+En `caret`, a diferencia de `mlr`, no existe un método para comparar todos los métodos que queremos, así que hay que ejecutar todos los métodos uno a uno:
+
+
+
+
+```r
+methods &lt;- c("cubist", "gbm", "xgbTree")
+
+methods %&gt;% 
+  lapply(function(x) {
+    
+    train(medv ~ ., 
+          data = BostonHousing,
+          method = x,
+          trControl = fitControl,
+          verbose = FALSE)
+    
+  }) -&gt; caret_results
+```
+
+*Hemos tenido que utilizar un `lapply` para ejecutar todos los métodos que nos interesaban.*
+
+---
+# .small[`caret`] - Resultados
+
+
+```
+Cubist 
+
+506 samples
+ 13 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 456, 454, 454, 455, 457, 456, ... 
+Resampling results across tuning parameters:
+
+  committees  neighbors  RMSE      Rsquared   MAE     
+   1          0          3.939305  0.8135201  2.478549
+   1          5          3.600509  0.8416157  2.221254
+   1          9          3.639795  0.8385131  2.240542
+  10          0          3.320117  0.8629138  2.213080
+  10          5          3.009630  0.8851357  1.948938
+  10          9          3.043609  0.8824804  1.979845
+  20          0          3.257859  0.8682433  2.183036
+  20          5          2.955227  0.8893099  1.923072
+  20          9          2.986594  0.8868305  1.951879
+
+RMSE was used to select the optimal model using the smallest value.
+The final values used for the model were committees = 20 and neighbors = 5.
+```
+
+---
+# .small[`caret`] - .small[`tuneGrid`]
+
+- Los métodos tienen usualmente un número de _hiperparámetros_ que ajustar.
+- Por defecto, `caret` se encarga de estudiar una serie de configuraciones para cada método que utiliza en el entrenamiento.
+- Si el método que queremos entrenar tiene `\(p\)` posibles hiperparámetros que configurar, `caret` usa de entrada `\(3^p\)` configuraciones.
+- Podemos especificar otras configuraciones de prueba mediante el argumento `tuneGrid` de la función `train`.
+.small[
+
+```r
+train(x, y, method = "rf", preProcess = NULL, ...,
+  weights = NULL, metric = ifelse(is.factor(y), "Accuracy", "RMSE"),
+  maximize = ifelse(metric %in% c("RMSE", "logLoss", "MAE"), FALSE, TRUE),
+  trControl = trainControl(), tuneGrid = NULL,
+  tuneLength = ifelse(trControl$method == "none", 1, 3))
+```
+]
+
+---
+# .small[`caret`] - Hiperparámetros
+
+
+```r
+getModelInfo(model = "xgbTree")[[1]]$parameters
+```
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; parameter &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; class &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; label &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; nrounds &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; # Boosting Iterations &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; max_depth &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Max Tree Depth &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; eta &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Shrinkage &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; gamma &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Minimum Loss Reduction &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; colsample_bytree &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Subsample Ratio of Columns &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; min_child_weight &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Minimum Sum of Instance Weight &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; subsample &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; numeric &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; Subsample Percentage &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+---
+# .small[`caret`] - Resultados (II)
+.tiny[
+
+```
+eXtreme Gradient Boosting 
+
+506 samples
+ 13 predictor
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 10 times) 
+Summary of sample sizes: 456, 455, 455, 455, 455, 456, ... 
+Resampling results across tuning parameters:
+
+  eta  max_depth  colsample_bytree  subsample  nrounds  RMSE      Rsquared   MAE     
+  0.3  1          0.6               0.50        50      4.692556  0.7361644  3.148563
+  0.3  1          0.6               0.50       100      4.557319  0.7507586  3.061440
+  0.3  1          0.6               0.50       150      4.503253  0.7570643  3.031274
+  0.3  1          0.6               0.75        50      4.649617  0.7391848  3.105018
+  0.3  1          0.6               0.75       100      4.518725  0.7540496  3.023159
+  0.3  1          0.6               0.75       150      4.466924  0.7601459  2.987899
+  ...
+
+Tuning parameter 'gamma' was held constant at a value of 0
+Tuning parameter 'min_child_weight'
+ was held constant at a value of 1
+RMSE was used to select the optimal model using the smallest value.
+The final values used for the model were nrounds = 150, max_depth = 3, eta = 0.3, gamma =
+ 0, colsample_bytree = 0.8, min_child_weight = 1 and subsample = 0.5.
+```
+]
+
+---
+# .small[`caret`] - Visualización de resultados
+
+
+```r
+plot(caret_results$xgbTree)
+```
+
+&lt;img src="MLR_files/figure-html/unnamed-chunk-28-1.png" style="display: block; margin: auto;" /&gt;&lt;img src="MLR_files/figure-html/unnamed-chunk-28-2.png" style="display: block; margin: auto;" /&gt;
+
+---
+class: inverse, center, middle
+# Clasificación
+
+### ![](https://cdn-images-1.medium.com/max/1600/1*SVeDXiWfTR5_1X2ct5THVA.jpeg)
+
+---
+# Datos
+
+
+```r
+AlzheimerData &lt;- readRDS("./AlzheimerData2.rds")
+```
+
+Usaremos datos procedentes de análisis de imagen médica tanto a pacientes de Alzheimer como sujetos sanos. 
+
+Tenemos unos 600 sujetos, de los cuales aproximadamente 330 son sanos.
+
+Los datos incluyen valores demográficos y parámetros morfológicos del cerebro (volumen y grosor) de cada individuo, hasta llegar a unas 340 variables por sujeto.
+
+El objetivo del problema es intentar _predecir_ el valor de la variable de clase (AD - _Alzheimer_ - o HEALTHY - _sano_ -) a partir del resto de variables.
+
+&lt;table class="table" style="font-size: 10px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; AGE &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; SEX &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; BRAIN_VOLUME &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; GM_VOLUME &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; WM_VOLUME &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 152 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.46 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; MALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1607.759 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 701.2512 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 493.5096 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 1895 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 38.00 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FEMALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1502.818 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 730.0900 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 518.2537 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 1731 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 62.80 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; MALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1648.618 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 750.3945 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 566.8752 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 856 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75.00 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; MALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1787.767 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 778.1313 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 543.2225 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 1702 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 70.25 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; FEMALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1177.902 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 545.2222 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 365.4857 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; 67 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 68.00 &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; MALE &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1410.726 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 598.9312 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 433.2638 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+# .small[`mlr`] - Definición del problema
+
+Vamos ahora a crear una tarea de clasificación asociada a los datos que hemos importado, y seleccionamos qué métodos queremos/podemos usar:
+
+
+```r
+ad_task &lt;- makeClassifTask(id = "Alzheimer Disease", 
+                           data = AlzheimerData, 
+                           target = "CLASS")
+
+my_class_learners &lt;- listLearners() %&gt;% 
+  subset(type == "classif" &amp; installed == TRUE &amp; factors == TRUE)
+```
+.tiny[
+
+```
+Supervised task: Alzheimer Disease
+Type: classif
+Target: CLASS
+Observations: 600
+Features:
+   numerics     factors     ordered functionals 
+        226           1           0           0 
+Missings: FALSE
+Has weights: FALSE
+Has blocking: FALSE
+Has coordinates: FALSE
+Classes: 2
+     AD HEALTHY 
+    268     332 
+Positive class: AD
+```
+]
+---
+# .small[`mlr`] - Entrenamiento
+
+Vamos a usar los métodos disponibles para clasificar los sujetos:
+
+
+```r
+results_ad &lt;- benchmark(learners = my_class_learners$class, 
+                        tasks = ad_task, 
+                        measures = list(mmce))
+```
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; MMCE &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.C50 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2533333 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.naiveBayes &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.3433333 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.lda &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2833333 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.multinom &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2650000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.nnet &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.4466667 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.rpart &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2400000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.lssvm &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2733333 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.gbm &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2683333 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.ranger &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2066667 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; classif.ksvm &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2466667 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+El error mínimo obtenido ha sido de 20.67% y lo ha obtenido ranger.
+
+---
+# .small[`mlr`] - Visualización de resultados
+
+
+```r
+plotBMRBoxplots(results_ad, mmce, style = "violin")
+```
+
+&lt;img src="MLR_files/figure-html/unnamed-chunk-35-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+# .small[`mlr`] - Matriz de confusión
+
+Otra forma de ver cómo se ha comportado el mejor modelo es a través de la matriz de confusión:
+
+&lt;br/&gt;
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; AD &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; HEALTHY &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 191 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 77 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 75 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 257 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;br/&gt;
+
+Este tipo de tablas nos proporciona información acerca de la sensibilidad (tasa de falsos negativos) y la especificidad (tasa de falsos positivos) del método.
+---
+# .small[`mlr`] - Predicción en nuevos sujetos
+
+Tomamos algunos individuos de forma aleatoria:
+.tiny[
+
+```r
+indices &lt;- sample(nrow(AlzheimerData), size = 15)
+
+test &lt;- AlzheimerData[indices, ]
+truth &lt;- AlzheimerData[indices, "CLASS"]
+```
+]
+Y predecimos la variable de respuesta `CLASS` para el mejor clasificador, sobre estos sujetos:
+.tiny[
+
+```r
+library(C50)
+predicted_y &lt;- predictLearner(
+  .learner = results_ad$learners[["classif.C50"]], 
+  .model = results_ad$results$`Alzheimer Disease`[["classif.C50"]]$models[[1]], 
+  .newdata = test
+)
+```
+]
+
+---
+# .small[`mlr`] - Resultados sobre los nuevos sujetos
+
+.pull-left[
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; truth &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; predicted_y &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+.pull.right[
+
+&lt;br/&gt;
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; AD &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; HEALTHY &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+---
+# .small[`caret`] - Entrenamiento
+
+Igual que en el caso de la regresión, debemos especificar los métodos a entrenar de antemano, y entrenar cada uno por separado.
+
+
+```r
+methods &lt;- c("gbm", "nnet", "rpart", "regLogistic", "xgbTree")
+
+methods %&gt;% 
+  lapply(function(x) {
+    
+    print(x)
+    
+    caret::train(CLASS ~ ., 
+                 data = AlzheimerData2,
+                 method = x,
+                 trControl = fitControl)
+    
+  }) -&gt; caret_class_results
+
+names(caret_class_results) &lt;- methods
+```
+
+---
+# .small[`caret`] - Resultados (individual)
+
+.tiny[
+
+```r
+print(caret_class_results$gbm)
+```
+
+```
+Stochastic Gradient Boosting 
+
+600 samples
+227 predictors
+  2 classes: 'AD', 'HEALTHY' 
+
+No pre-processing
+Resampling: Cross-Validated (10 fold, repeated 1 times) 
+Summary of sample sizes: 540, 540, 540, 540, 540, 539, ... 
+Resampling results across tuning parameters:
+
+  interaction.depth  n.trees  Accuracy   Kappa    
+  1                   50      0.7115398  0.4169400
+  1                  100      0.7299032  0.4525592
+  1                  150      0.7533204  0.5013655
+  2                   50      0.7498750  0.4952676
+  2                  100      0.7766273  0.5489929
+  2                  150      0.7980143  0.5906477
+  3                   50      0.7799898  0.5546460
+  3                  100      0.7948777  0.5840294
+  3                  150      0.8082129  0.6109048
+
+Tuning parameter 'shrinkage' was held constant at a value of 0.1
+
+Tuning parameter 'n.minobsinnode' was held constant at a value of 10
+Accuracy was used to select the optimal model using the largest value.
+The final values used for the model were n.trees = 150,
+ interaction.depth = 3, shrinkage = 0.1 and n.minobsinnode = 10.
+```
+]
+---
+# .small[`caret`] - Resultados (comparativo)
+
+Si comparamos los resultados obtenidos por todos los clasificadores, los resultados son como siguen:
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; MMCE &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; gbm &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1917871 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; nnet &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2697245 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; rpart &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2929777 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; regLogistic &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.2280995 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; xgbTree &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.1766352 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+En este caso, el mejor clasificador ha sido xgbTree con un error (MMCE) de 17.66%.
+
+---
+# .small[`caret`] - Matriz de confusión
+
+Vemos la matriz de confusión obtenida por el mejor método, usando todo el conjunto de datos:
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; AD &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; HEALTHY &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 267 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 328 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+---
+# .small[`caret`] - Predicción en nuevos sujetos
+
+
+```r
+predicted_y &lt;- caret_class_results[[best_classifier_caret]] %&gt;%  
+  predict(newdata = test)
+```
+
+.pull-left[
+.tiny[
+&lt;table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; truth &lt;/th&gt;
+   &lt;th style="text-align:left;"&gt; predicted_y &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+]
+
+.pull.right[
+
+&lt;br/&gt;
+
+&lt;table class="table" style="font-size: 14px; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt;   &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; AD &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; HEALTHY &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; AD &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;"&gt; HEALTHY &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 9 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+]
+
+---
+# Conclusiones
+
+- Existe multitud de paquetes para aplicar métodos de Machine Learning dentro de R, con muy diversas especializaciones.
+
+- Para alguien no experto, lo mejor es utilizar uno de los paquetes `caret` o `mlr`: Nos proporcionan _interfaces_ de alto nivel con los paquetes que implementan los diversos métodos.
+- Para quien ya tenga experiencia, se puede empezar por comparar diversos métodos usando uno de los paquetes anteriores y, posteriormente, usar el paquete concreto del método que haya demostrado mejores resultados.
+
+- `caret` facilita hacer búsqueda de la mejor configuración de un método, pero `mlr` es más útil a la hora de comparar varios métodos entre sí.
+- Lo mismo se aplica a la visualización de los resultados: en `mlr` se pueden representar varios métodos a la vez y compararlos, mientras que en `caret` no es sencillo esto último, sin embargo se puede usar para comparar las distintas configuraciones testeadas.
+
+---
+
+class: inverse, center, middle
+
+# ¡Gracias!
+
+twitter: `@dominlopez` - `@_RMlg`
+
+github: `neuroimaginador` - `RMalagaGroup`
+
+.tiny[Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).]
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "solarized-light",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
