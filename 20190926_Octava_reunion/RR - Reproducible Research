@@ -1,0 +1,19 @@
+RR - Reproducible Research
+
+R integra un conjunto de herramientas que permite que cualquier persona puede reproducir los resultados bajo las mismas condiciones. Esto es posible gracias a los documentos dinámicos - dynamic documents (literate programming, Donald Knuth, 1984).
+
+El producto final de un análisis, o de una investigación no es solo un informe o un artículo, es también el entorno computacional completo para reproducir los resultados, el código y los datos.
+
+Desde R podemos generar documentos dinámicos que integren:
+- los datos usados 
+- explicaciones 
+- Latex
+- código en R 
+- código Python,...
+- los resultados del código y/o gráficos.
+
+Desde R, usando la herramienta denominada RMarkdown podemos generar informes, presentaciones, libros, webs de alta calidad, siguiendo el paradigma de la investigación reproducible.
+
+En esta primera charla, Domingo López nos dará una introducción a RMardown.  La charla es un primer paso para ser capaces de  generar presentaciones, pdfs, incluso libros, webs, etc. 
+
+

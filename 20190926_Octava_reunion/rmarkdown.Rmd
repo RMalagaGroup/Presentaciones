@@ -1,0 +1,251 @@
+---
+# title: "Investigación Reproducible y RMarkdown"
+# subtitle: "Grupo de Usuarios de R de Málaga"
+# author: "Á. Mora, D. López"
+# date: "26/09/2019"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE}
+library(xaringanthemer)
+solarized_light(
+  background_color = "#ffffff",
+  text_color = "#000000",
+  code_font_size = "0.9em",
+  code_font_family = "Fira Code",
+  code_font_url    = "https://cdn.rawgit.com/tonsky/FiraCode/1.204/distr/fira_code.css",
+  extra_css = list(".small" = list("font-size" = "90%"),
+                   ".tiny" = list("font-size" = "80%"))
+)
+```
+background-image: url("rmarkdown/logo_hex.png")
+background-size: 90px
+background-position: 20% 19%
+
+class: title-slide, center, middle
+
+
+
+## &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Grupo de Usuarios de R de Málaga
+
+
+# Investigación Reproducible y RMarkdown
+
+
+### Á. Mora y D. López
+
+
+26 septiembre 2019, 19 h
+
+### &nbsp;
+
+
+<img align="left" src="rmarkdown/RConsortium.png" height="40" width="150"/>
+<img align="right" src="rmarkdown/logo_matap.png" height="40" width="160"/>
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+---
+class:middle,center
+
+
+# Investigación reproducible 
+
+### Reproducible Research - RR
+
+El  producto final de un análisis, o de una  investigación no es solo un informe o un artículo, es también el __entorno computacional completo__ para reproducir los resultados, el código y los datos.
+
+---
+class:middle
+
+## Aspectos de la investigación reproducible
+
+R integra un conjunto de herramientas que permite que cualquier persona puede  __reproducir los resultados bajo las mismas condiciones__. Esto es posible gracias a los documentos dinámicos - _dynamic documents_ (_literate programming_, Donald Knuth, 1984).
+
+- __Código__: creación de paquetes, mantenimiento de repositorios de código (GitHub...)
+- __Entorno de ejecución__: gestión de versiones tanto de paquetes como del propio R: _packrat_, _Docker_...
+- __Resultados de los análisis__: generación de informes, presentaciones, con los resultados, que puedan ser leídos e interpretados por otro investigador. 
+
+
+---
+class:middle
+
+## Documentos dinámicos con R
+
+Desde R podemos generar documentos dinámicos que integren: 
+
+- los datos usados
+- explicaciones
+- código en R o en otros lenguajes
+- resultados
+
+Desde R, usando la herramienta denominada `RMarkdown` podemos generar informes, presentaciones, libros, webs de alta calidad, siguiendo el paradigma de la *investigación reproducible*.
+
+---
+class: center, middle
+
+# `RMarkdown`
+
+---
+class:middle
+
+## RMarkdown
+ 
+Un fichero Rmarkdown puede integrar: 
+
+- texto, explicaciones,
+- código R como herramienta computacional
+- código $\LaTeX$ para representar fórmulas matemáticas
+- Markdown como lenguaje de marcado para la generación de publicaciones
+- hojas de estilo CSS para mejorar las presentaciones
+- etc.
+
+--
+
+Se necesita el paquete __rmarkdown__, pero no es necesario instalarlo o cargarlo de forma explícita, ya que RStudio hace ambas cosas cuando es necesario.
+
+Se recomienda que se utilice el IDE de [RStudio](https://www.rstudio.com/products/rstudio/), pero no es obligatorio.
+
+
+---
+class:middle
+
+## Creación de un documento de RMarkdown
+
+Creamos un nuevo documento a partir del menú __File -> New File -> R Markdown__, que lanzará un asistente que se puede usar para pre-rellenar con contenido útil.
+
+```{r, echo = FALSE, out.width = "65%", , fig.align='center'}
+knitr::include_graphics("rmarkdown/rmarkdown-wizard.png")
+```
+
+---
+class:middle
+
+## Análisis de las partes de un RMarkdown
+
+1. __Cabecera__: título y metadatos
+
+1. __Cuerpo del texto__: incluye encabezados, texto normal y trozos de código (_chunks_)
+
+---
+
+## Compilación del documento
+
+Para producir un informe completo que contenga todo el texto, el código y los resultados, se hace click en el botón "Knit" (en la pequeña barra auxiliar encima del documento), o se puede presionar Cmd/Ctrl + Mayúsc + K. También se puede hacer lo mismo desde la consola, con `rmarkdown::render("nombredelarchivo.Rmd")`. Esto muestra el informe en el panel del visor, creando un archivo (HTML, PDF o _Word_) que se puede compartir.
+
+```{r, echo = FALSE, out.width = "65%", fig.align='center'}
+knitr::include_graphics("rmarkdown/diamond-sizes-report.png")
+```
+
+---
+class:middle,center
+
+## ¡Vamos a practicar!
+
+
+---
+
+## Documentos
+
+Tipos básicos de documentos (aunque existen más):
+
+*   `html_document` genera documentos HTML auto-contenidos.
+
+*   `pdf_document` genera un PDF con \LaTeX (un sistema abierto de escritura de documentos), que no necesita instalar, ya que RStudio lo hará por defecto si no lo tenía previamente.
+  
+*   `word_document` para documentos de Microsoft Word (`.docx`).
+  
+*   `odt_document` para documentos de OpenDocument Text (`.odt`).
+  
+*   `rtf_document` para documentos en Rich Text Format (`.rtf`).
+
+---
+
+## Notebooks
+
+Un _notebook_, de tipo `html_notebook`, es una variación de un `html_document`. Las salidas creadas son muy similares, pero el propósito de éste último es distinto. 
+
+El objetivo de un `html_document` es comunicar resultados con los _tomadores de decisiones_, mientras que un _notebook_ se centra en colaborar con otros científicos de datos.
+
+La diferencia entre ambos propósitos conlleva usos diferentes de la salida, en HTML. Ambos formatos contienen todos los resultados, pero en el _notebook_, el HTML contiene además todo el código fuente. 
+
+---
+class:middle
+
+Esto significa que se puede usar el archivo `.nb.html` generado por el _notebook_ de dos formas distintas:
+
+1. Se puede __visualizar en un navegador web__, mostrando todos los resultados. Al contrario de lo que ocurre con el `html_document`, esta visualización siempre incluye una copia incrustada del código fuente que se usó para generarlos.
+
+1. Se puede __editar en RStudio__. Cuando se abre un archivo `.nb.html`, RStudio __recrea de forma automática el archivo__ `.Rmd` que lo generó. En un futuro, se prevé que se podrán incluir además archivos auxiliares (por ejemplo, archivos de datos en formato `.csv`), que serían extraídos de forma automática cuando fuera necesario.
+
+---
+class:middle
+
+## Presentaciones
+
+Se puede usar `RMarkdown` para producir presentaciones. Se tiene menor control de la apariencia visual que con herramientas como PowerPoint o Keynote, pero la habilidad de incrustar los resultados del código en `R` dentro de una presentación puede ahorrarnos una gran cantidad de tiempo.
+
+Las presentaciones funcionan dividiendo todo el contenido en _diapositivas_, creando una nueva cada vez que se encuentra en el texto un encabezado de primer (`#`) o segundo (`##`) nivel. También se puede insertar una regla horizontal (`***`) para crear una nueva diapositiva sin encabezado. 
+
+---
+class:middle
+
+`RMarkdown` viene con cuatro formatos de presentación incluidos:
+
+1.  `ioslides_presentation` - presentación en HTML `ioslides`
+
+1.  `slidy_presentation` - presentación en HTML con W3C Slidy
+
+1.  `beamer_presentation` - presentación en PDF Beamer en $\LaTeX$
+
+1. `Powerpoint`
+
+
+---
+class:middle
+
+## Otros paquetes para extender la funcionalidad de `RMarkdown`
+
+- [vitae](https://github.com/ropenscilabs/vitae) para crear CV de forma dinámica (hay más paquetes que ayudan a recuperar datos de, por ejemplo, ORCID, Google Scholar...)
+- [rticles](https://github.com/rstudio/rticles): Plantillas para la escritura de papers para las revistas y editoriales más relevantes
+- [xaringan](https://github.com/yihui/xaringan): El _ninja_ de las presentaciones
+--
+
+- [blogdown](https://github.com/rstudio/blogdown) para la creación de blogs y websites
+- [pkgdown](https://github.com/rstudio/pkgdown) para generar la documentación de un paquete en formato web
+- [bookdown](https://github.com/rstudio/bookdown) para la creación y publicación de libros
+
+---
+class: center, middle
+
+# ¡A trabajar!
+
+---
+class: center, middle 
+background-image: url("rmarkdown/logo_hex.png")
+background-size: 90px
+background-position: 50% 22%
+
+# &nbsp;
+
+# ¡Gracias! 
+
+twitter: `@dominlopez` - `@_RMlg` 
+
+github: `neuroimaginador` - `RMalagaGroup` 
+
+.tiny[Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).]
+
+
+<br/>
+
+<img align="left" src="rmarkdown/RConsortium.png" height="40" width="150"/>
+<img align="right" src="rmarkdown/logo_matap.png" height="40" width="160"/>
