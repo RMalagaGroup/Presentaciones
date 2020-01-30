@@ -1,0 +1,325 @@
+---
+title: "Árboles de decisión y Bosques aleatorios"
+author: "Gabriel Aguilera"
+output:
+  prettydoc::html_pretty:
+    highlight: github
+    theme: cayman
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<span style='font-size:1.5em'>**Grupo de Usuarios de R de Málaga** </span>
+
+<span style='font-size:1.5em'>  Enero 2020 </span>
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/2000px-R_logo.svg.png){ width=30% }
+ 
+# Paquetes necesarios
+```{r}
+necesarios=c("tree","rpart","rpart.plot", "dplyr","randomForest")
+install.packages(necesarios,dependencies = TRUE, repos = "http://cran.us.r-project.org")
+library(tree)
+library(rpart)
+library(rpart.plot)
+```
+
+# Árboles de decisión
+
+
+## Definición de árbol de decisión
+
+Un árbol de decisión es un árbol (normalmente binario) en el que los nodos representan una pregunta sobre una variable que divide a la población asociada al nodo en dos grupos. El nodo raíz corresponde a toda la población y según se desciende en el árbol las poblaciones son más reducidas. Cada nodo va etiquetado con la pregunta que divide a la población y en ocasiones con la proporción de elementos de la población que verifican la variable objetivo (dependiente) (sobre el total del nodo). Cada arista va etiquetada con la respuesta a la pregunta . Los nodos hoja corresponden con los resultados de las decisiones de sus padres. En data-mining con la clasificación correspondiente. A los nodos hoja se les suele llamar nodos respuesta.
+
+## Los árboles de decisión  en minería de datos (data-mining) 
+
+Tenemos una población con una serie de variables que pueden ser contínuas o categóricas. Se trata de predecir una de las variables (dependiente) a partir de las otras (independientes). Si la variable dependiente es continua se utlizan árboles de regresión, si es categórica se utilizan árboles de clasificación.
+
+Hay varias técnicas para hacer árboles de decisión. Nosotros vamos a utilizar la técnica CART (Classification And Regression Trees). La implementación de la técnica CART que usaremos es RPART (Recursive Partitioning and Regression Trees). 
+
+RPART encuentra la variable independiente que mejor separa los datos en grupos, que corresponden con las categorías de la variable objetivo. Esta mejor separación se expresa con una pregunta (o regla) sobre la variable independiente. A cada regla (o pregunta) le corresponde un nodo. Si consideramos la probabilidad de encontrtar individuos de la variable dependiente (objetivo) en un grupo u otro de los que divide la regla. Escogemos la variable independiente que maximiza la diferencia de estas probabilidades. Se suele utilizar el Índice de Gini = IG = $p^2 + (1-p)^2$, donde $p$ es la probabilidad de encontrar un individuo de la variable objetivo en el grupo.
+
+```{r}
+gini = function(p){return (p^2 + (1-p)^2)}
+x=1:100
+y=1:100
+for(i in 1:100){x[i]=i/100; y[i]=gini(x[i])}
+plot(x,y,type="l")
+```
+
+
+
+Para cada subnodo se calcula su índice de Gini y el Gini ponderado para el nodo. Gini ponderado=  GP = $IG_1*P_1 + IG_2*P_2$, donde $IG_i= $ Índice de Gini del subnodo $i$ y $P_i =$ proporción de individuos del subgrupo del subnodo $i$ respecto del grupo asociado a su nodo padre.
+
+
+Esto se repite recursivamente hasta que no haya una mejor separación. En este caso se crea un nodo hoja y se decide la clasificación según la mayor probabilidad.
+
+## Ventajas e inconvenientes de los árboles de clasificación.
+
+Ventajas:
+
+- Legibilidad (interpretabilidad)
+
+- Rapidez y facilidad
+
+- Buena predicción respecto de otros métodos, sobre todo cuando las fronteras no son lineales.
+
+- No muy sensible a outliers
+
+
+Inconvenientes:
+
+- Gran dependencia de las muestras tomadas (inestabilidad).
+
+- Posibilidad de sobreajuste
+
+## Ejemplo de árbol de clasificación.
+
+```{r}
+library(dplyr)
+obesidad=read.csv("/Users/gabri/Desktop/Obesidad.csv", header=TRUE, sep=";")
+head(obesidad)
+nrow(obesidad)
+```
+
+Si queremos predecir la variable De (depresión) en función de las demás vamos a hacer un árbol de clasificación.
+
+```{r}
+# Cálculo del IG (Índice de Gini) del nodo raíz 
+de=filter(obesidad, De=="Si")
+p=nrow(de)/nrow(obesidad)
+IG=p^2+(1-p)^2
+#Cálculo del GP  (Gini pobderado) de los dos subnodos para TS=="Si"
+ts=filter(obesidad, TS=="Si")
+Prop1=nrow(ts)/nrow(obesidad)
+nts=filter(obesidad, TS=="No")
+Prop2=nrow(nts)/nrow(obesidad)
+tsde=filter(obesidad, TS=="Si" & De=="Si")
+p1=nrow(tsde)/nrow(ts)
+IG1=p1^2+(1-p1)^2
+ntsde=filter(obesidad, TS=="No" & De=="Si")
+nrow(ntsde)
+p2=nrow(ntsde)/nrow(nts)
+IG2=p2^2+(1-p2)^2
+GP=IG1*Prop1+IG2*Prop2
+IG
+GP
+IG<GP
+# Si sale TRUE es mejor preguntar ¿TS=="Si"?
+IG
+IG1
+IG2
+#IG1 < IG y IG2 > IG
+# Vamos a calcular GPIMC con la pregunta ¿IMC<30? para el subnodo correspondiente a TS==Si.
+m30=filter(obesidad, IMC<30)
+Prop1=nrow(m30)/nrow(obesidad)
+M30=filter(obesidad, IMC>=30)
+Prop2=nrow(M30)/nrow(obesidad)
+m30de=filter(obesidad, IMC<30 & De=="Si")
+p1=nrow(m30de)/nrow(ts)
+IG1=p1^2+(1-p1)^2
+M30de=filter(obesidad, IMC>=30 & De=="Si")
+p2=nrow(ntsde)/nrow(nts)
+IG2=p2^2+(1-p2)^2
+GPIMC=IG1*Prop1+IG2*Prop2
+IG
+GPIMC
+IG<GPIMC
+# Si es verdad, es mejor hacer la pregunta que no hacerla
+GP<GPIMC
+# Si es verdad, es mejor pregunta la de ¿IMC<30?; si no, es mejor la de ¿TS==Si? 
+# Vamos a suponer que la pregunta ¿TS=="Si"? es mejor que cualquier otra
+# ¿Preguntamos ¿S==h? para el primer nodo hijo?
+
+tsh=filter(obesidad, TS=="Si" & S=="h")
+tsm=filter(obesidad, TS=="Si" & S=="m")
+Prop11=nrow(tsh)/nrow(ts)
+Prop12=nrow(tsm)/nrow(ts)
+tshde=filter(obesidad, TS=="Si" & S=="h" & De=="Si")
+p11=nrow(tshde)/nrow(tsh)
+IG11=p11^2+(1-p11)^2
+tsmde=filter(obesidad, TS=="Si" & S=="m" & De=="Si")
+p12=nrow(tsmde)/nrow(tsm)
+IG12=p12^2+(1-p12)^2
+PG1=IG11*Prop11+IG12*Prop12
+IG1
+PG1
+IG1<PG1
+# Si es verdad, la pregunta ¿S==h? mejora el IG del primer subnodo 
+# y si es mayor que para cualquier otra variable se establece como primer subnodo izquierdo.
+```
+
+![](/Users/gabri/Desktop/árbol_depresión.png){ width=60% }
+
+## Esto se puede hacer automáticamente con el comando rpart
+
+```{r}
+obesidad=read.csv("/Users/gabri/Desktop/Obesidad.csv", header=TRUE, sep=";")
+#Dividimos los datos en dos partes, una para entrenar el modelo del árbol y otra para comprobar el resultado.
+set.seed(19354)
+partición=runif(nrow(obesidad))
+#Seleccionamos el 80% para entrenamiento del modelo y el 20% para probar el modelo
+entrenamiento=obesidad[partición<0.8,]
+prueba=obesidad[partición>=0.8,] 
+#Creamos el modelo del árbol a partir de los datos de entrenamiento
+modelo_árbol=rpart(De~.,data=entrenamiento,method="class")
+rpart.plot(modelo_árbol)
+#Predecimos los datos de prueba con el modelo
+predicción=predict(modelo_árbol, prueba, type="class" )
+#Creamos la matriz de frecuencias conjunta de los datos preichos y los datos reales de prueba
+mc=table(prueba[,"De"], predicción)
+# Calculamos la exactitud de la predicción
+exactitud=sum(diag(mc))/sum(mc)
+exactitud
+```
+
+## Otro ejemplo
+
+```{r}
+diabetes=read.csv("/Users/gabri/Desktop/Simple.csv", header=TRUE, sep=";")
+head(diabetes)
+nrow(diabetes)
+# Tomamos como variable dependiente DM2_s
+
+set.seed(19354)
+partición=runif(nrow(diabetes))
+#Seleccionamos el 75% para entrenamiento del modelo y el 25% para probar el modelo
+entrenamiento=diabetes[partición<0.75,]
+prueba=diabetes[partición>=0.75,] 
+#Creamos el modelo del árbol a partir de los datos de entrenamiento
+modelo_árbol=rpart(DM2_s~. , data=entrenamiento,method="class")
+rpart.plot(modelo_árbol)
+#Predecimos los datos de prueba con el modelo
+predicción=predict(modelo_árbol, prueba, type="class" )
+#Creamos la matriz de frecuencias conjunta de los datos preichos y los datos reales de prueba
+mc=table(prueba$DM2_s, predicción)
+# Calculamos la exactitud de la predicción
+exactitud=sum(diag(mc))/sum(mc)
+exactitud
+```
+
+
+# Bosques Aleatorios
+
+## Paquetes necesarios
+```{r}
+
+library(randomForest)
+```
+
+## Ejemplo manual de bosque aleatorio usando rpart
+
+```{r}
+# Con el ejemplo de la base de datos de diabetes ya usada anteriormente
+
+diabetes=read.csv("/Users/gabri/Desktop/Simple.csv", header=TRUE, sep=";")
+diabetes$DM2_s=factor(diabetes$DM2_s)
+
+# Tomamos como variable dependiente DM2_s
+
+# Dividimos los datos  en dos partes (de entrenamiemnto y prueba)
+
+set.seed(193543)
+partición=runif(nrow(diabetes))
+#Seleccionamos el 85% para entrenamiento del modelo y el 15% para probar el modelo
+entrenamiento=diabetes[partición<0.85,]
+prueba=diabetes[partición>=0.85,] 
+
+#Ahora creamos varios  modelos del árbol a partir del 15 % de los datosde netrenamiento
+
+set.seed(123233)
+part_1 = runif(nrow(entrenamiento))
+entre_1=entrenamiento[part_1<0.15,]
+modelo_1=rpart(DM2_s~. , data=entre_1,method="class")
+rpart.plot(modelo_1)
+predi_1=predict(modelo_1, prueba, type="class" )
+mc_1=table(prueba$DM2_s, predi_1)
+exact_1=sum(diag(mc_1))/sum(mc_1)
+exact_1
+
+set.seed(1433)
+part_2 = runif(nrow(entrenamiento))
+entre_2=entrenamiento[part_2<0.15,]
+modelo_2=rpart(DM2_s~. , data=entre_2,method="class")
+rpart.plot(modelo_2)
+predi_2=predict(modelo_2, prueba, type="class" )
+mc_2=table(prueba$DM2_s, predi_2)
+exact_2=sum(diag(mc_2))/sum(mc_2)
+exact_2
+
+set.seed(126733)
+part_3 = runif(nrow(entrenamiento))
+entre_3=entrenamiento[part_3<0.15,]
+modelo_3=rpart(DM2_s~. , data=entre_3,method="class")
+rpart.plot(modelo_3)
+predi_3=predict(modelo_3, prueba, type="class" )
+mc_3=table(prueba$DM2_s, predi_3)
+exact_3=sum(diag(mc_3))/sum(mc_3)
+exact_3
+
+set.seed(13453)
+part_4 = runif(nrow(entrenamiento))
+entre_4=entrenamiento[part_4<0.15,]
+modelo_4=rpart(DM2_s~. , data=entre_4,method="class")
+rpart.plot(modelo_4)
+predi_4=predict(modelo_4, prueba, type="class" )
+mc_4=table(prueba$DM2_s, predi_4)
+exact_4=sum(diag(mc_4))/sum(mc_4)
+exact_4
+
+set.seed(1345563)
+part_5 = runif(nrow(entrenamiento))
+entre_5=entrenamiento[part_5<0.15,]
+modelo_5=rpart(DM2_s~. , data=entre_5,method="class")
+rpart.plot(modelo_5)
+predi_5=predict(modelo_5, prueba, type="class" )
+mc_5=table(prueba$DM2_s, predi_5)
+exact_5=sum(diag(mc_5))/sum(mc_5)
+exact_5
+
+# Para hacer más robusta la predicción hacemos que voten los árboles, para ello hacemos la moda de todos ellos
+
+# Hacemos una función para calcular la moda
+
+moda= function(para)
+{
+  sin_duplicados=unique(para)
+  sin_duplicados[which.max(tabulate(match(para,sin_duplicados)))]
+}
+# Votan las predicciones en predi_moda
+
+predi_moda=1:nrow(prueba)
+for (i in 1:nrow(prueba))
+{
+  predi_moda[i]=moda(c(predi_1[i],predi_2[i], predi_3[i],predi_4[i],predi_5[i]))
+}
+mean(c(exact_1,exact_2,exact_3,exact_4,exact_5))
+mc_moda=table(prueba$DM2_s, predi_moda)
+exact_moda=sum(diag(mc_moda))/sum(mc_moda)
+exact_moda
+```
+
+## Lo hacemos ahora directamente con el comando randomForest
+
+```{r}
+modelo=randomForest(DM2_s ~ ., data=entrenamiento, na.action=na.omit)
+modelo
+predi_rf=predict(modelo,prueba)
+mc_rf=table(predi_rf, prueba$DM2_s)
+exac_rf=sum(diag(mc_rf))/sum(mc_rf)
+exac_rf
+```
+ 
+
+## Lo hacemos ahora disminuyendo el número de árboles (ntree=300)
+
+```{r}
+modelo=randomForest(DM2_s ~ ., data=entrenamiento, na.action=na.omit, ntree=300)
+modelo
+predi_rf=predict(modelo,prueba)
+mc_rf=table(predi_rf, prueba$DM2_s)
+exac_rf=sum(diag(mc_rf))/sum(mc_rf)
+exac_rf
+```
+
